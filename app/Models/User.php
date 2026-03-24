@@ -10,8 +10,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'tag'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -29,6 +30,27 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($user)
+        {
+            if(!$user->tag) {
+                $user->tag = self::generateUniqueTag();
+            }
+        });
+    }
+
+    private static function generateUniqueTag(): string
+    {
+        do{
+            $tag = 'user_' . Str::lower(Str::random(8));
+        } while (self::where('tag', $tag)->exists());
+
+        return $tag;
     }
 
     public function conversations(): BelongsToMany
