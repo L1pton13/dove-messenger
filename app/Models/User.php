@@ -12,13 +12,14 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
-#[Fillable(['name', 'email', 'password', 'tag'])]
+#[Fillable(['name', 'email', 'password', 'tag', 'avatar'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
+    protected $appends = ['avatar_url'];
     /**
      * Get the attributes that should be cast.
      *
@@ -53,9 +54,18 @@ class User extends Authenticatable
         return $tag;
     }
 
+    public function getAvatarUrlAttribute()
+    {
+        if ($this->avatar){
+            return asset('storage/' . $this->avatar);
+        }
+        return null;
+    }
+
     public function conversations(): BelongsToMany
     {
         return $this->belongsToMany(Conversation::class)
-                    ->withTimestamps();
+                    ->withTimestamps()
+                    ->withPivot('cleared_at');
     }
 }

@@ -41,37 +41,36 @@ const closeModal = () => {
 <template>
     <section class="space-y-6">
         <header>
-            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                Delete Account
+            <h2 class="text-lg font-bold text-slate-800 dark:text-[#1f293d]">
+                Удаление аккаунта
             </h2>
 
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Once your account is deleted, all of its resources and data will
-                be permanently deleted. Before deleting your account, please
-                download any data or information that you wish to retain.
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-500">
+                Как только ваш аккаунт будет удален, все его ресурсы и данные будут безвозвратно утеряны. Перед удалением, пожалуйста, скачайте любую важную информацию, которую вы хотите сохранить.
             </p>
         </header>
 
-        <DangerButton @click="confirmUserDeletion">Delete Account</DangerButton>
+        <DangerButton 
+            @click="confirmUserDeletion"
+            class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition shadow-md active:scale-[0.98]"
+        >
+            Удалить аккаунт
+        </DangerButton>
 
         <Modal :show="confirmingUserDeletion" @close="closeModal">
-            <div class="p-6">
-                <h2
-                    class="text-lg font-medium text-gray-900 dark:text-gray-100"
-                >
-                    Are you sure you want to delete your account?
+            <div class="p-6 text-left">
+                <h2 class="text-lg font-bold text-slate-800 dark:text-gray-100">
+                    Вы уверены, что хотите удалить свой аккаунт?
                 </h2>
 
-                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    Once your account is deleted, all of its resources and data
-                    will be permanently deleted. Please enter your password to
-                    confirm you would like to permanently delete your account.
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    Это действие необратимо. Пожалуйста, введите ваш текущий пароль, чтобы подтвердить, что вы действительно хотите навсегда удалить этот профиль.
                 </p>
 
                 <div class="mt-6">
                     <InputLabel
                         for="password"
-                        value="Password"
+                        value="Пароль"
                         class="sr-only"
                     />
 
@@ -80,26 +79,29 @@ const closeModal = () => {
                         ref="passwordInput"
                         v-model="form.password"
                         type="password"
-                        class="mt-1 block w-3/4"
-                        placeholder="Password"
+                        class="mt-1 block w-full md:w-3/4 rounded-xl border-gray-300 shadow-sm focus:border-slate-700 focus:ring-slate-700"
+                        placeholder="Введите ваш пароль"
                         @keyup.enter="deleteUser"
                     />
 
                     <InputError :message="form.errors.password" class="mt-2" />
                 </div>
 
-                <div class="mt-6 flex justify-end">
-                    <SecondaryButton @click="closeModal">
-                        Cancel
+                <div class="mt-6 flex justify-end space-x-3">
+                    <SecondaryButton 
+                        @click="closeModal"
+                        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition"
+                    >
+                        Отмена
                     </SecondaryButton>
 
                     <DangerButton
-                        class="ms-3"
+                        class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition shadow-sm"
                         :class="{ 'opacity-25': form.processing }"
                         :disabled="form.processing"
                         @click="deleteUser"
                     >
-                        Delete Account
+                        Удалить окончательно
                     </DangerButton>
                 </div>
             </div>
