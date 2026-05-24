@@ -338,27 +338,70 @@ onUnmounted(() => {
     window.removeEventListener('click', globalClickHandler);
 });
 
+const isSearched = ref(false);
+
 const searchContact = async () => {
-    if (searchQuery.value.length < 3) return;
+    const query = searchQuery.value.trim();
+    
+    if (!query) {
+        searchResult.value = null;
+        isSearched.value = false;
+        return;
+    }
+    
+    if (query.length < 2) {
+        searchResult.value = null;
+        isSearched.value = false;
+        return;
+    }
+    
     try {
-        const response = await axios.get(`/search-contact?tag=${searchQuery.value}`);
-        searchResult.value = response.data;
+        const response = await axios.get(`/search-contact?name=${query}`);
+        
+        // Если бэкенд вернул пустой ответ, пустую строку или объект без ID — принудительно ставим null
+        if (!response.data || !response.data.id) {
+            searchResult.value = null;
+        } else {
+            searchResult.value = response.data;
+        }
+        
+        isSearched.value = true;
     } catch (error) {
         searchResult.value = null;
+        isSearched.value = true;
     }
 };
 
 const startChat = async (userId) => {
+    if (!userId) return;
+
     try {
         const response = await axios.post('/conversations', { user_id: userId });
         const conversation = response.data;
+        
         searchResult.value = null;
         searchQuery.value = '';
+        isSearched.value = false;
+        
+        // Подстраховка: если бэкенд не прислал какие-то поля, заполняем их на фронте
+        if (!conversation.messages) conversation.messages = [];
+        if (!conversation.updated_at) conversation.updated_at = new Date().toISOString();
+        if (!conversation.pivot) conversation.pivot = { is_hidden: 0, cleared_at: null };
+
         const exists = localConversations.value.some(c => c.id === conversation.id);
-        if (!exists) localConversations.value.push(conversation);
+        
+        if (!exists) {
+            localConversations.value.push(conversation);
+        } else {
+            const index = localConversations.value.findIndex(c => c.id === conversation.id);
+            if (index !== -1) {
+                localConversations.value[index] = conversation;
+            }
+        }
+        
         selectChat(conversation.id);
     } catch (error) {
-        console.error(error);
+        console.error("Ошибка при открытии чата:", error);
     }
 };
 
@@ -450,19 +493,24 @@ const sendMessage = async () => {
             
             <div :class="['w-full md:w-1/3 border-r border-gray-200 flex flex-col h-full bg-white transition-all duration-300 shrink-0', selectedChatId ? 'hidden md:flex' : 'flex']">
                 <div class="p-4 border-b">
-                    <input v-model="searchQuery" @input="searchContact" type="text" placeholder="Поиск по @тегу..." class="w-full rounded-lg border-gray-300 shadow-sm focus:border-slate-700 focus:ring-slate-700"/>
+                    <input v-model="searchQuery" @input="searchContact" type="text" placeholder="Поиск по имени..." class="w-full rounded-lg border-gray-300 shadow-sm focus:border-slate-700 focus:ring-slate-700"/>
                 </div>
+                
                 <div class="flex-1 overflow-y-auto">
-                    <div v-if="searchResult" class="p-4 border-b bg-slate-50">
-                        <div @click="startChat(searchResult.id)" class="p-3 bg-white rounded-lg cursor-pointer hover:shadow-md transition border border-slate-200 flex items-center">
+                    <div v-if="searchQuery.trim() && isSearched" class="p-4 border-b bg-slate-50">
+                        <div v-if="searchResult" @click="startChat(searchResult.id)" class="p-3 bg-white rounded-lg cursor-pointer hover:shadow-md transition border border-slate-200 flex items-center">
                             <div class="w-9 h-9 rounded-xl bg-slate-700 flex items-center justify-center text-white text-sm font-bold overflow-hidden shrink-0">
                                 <img v-if="searchResult.avatar_url" :src="searchResult.avatar_url" class="w-full h-full object-cover" />
-                                <span v-else>{{ searchResult.name[0] }}</span>
+                                <span v-else>{{ searchResult.name ? searchResult.name[0] : '?' }}</span>
                             </div>
                             <div class="ml-3 text-left">
                                 <p class="font-bold text-gray-900">{{ searchResult.name }}</p>
                                 <p class="text-xs text-gray-500">@{{ searchResult.tag }}</p>
                             </div>
+                        </div>
+
+                        <div v-else class="p-3 text-center text-sm text-gray-500 font-medium">
+                            Пользователи не найдены
                         </div>
                     </div>
 
@@ -471,10 +519,15 @@ const sendMessage = async () => {
                             <div class="flex items-center">
                                 <div class="w-10 h-10 rounded-xl bg-slate-700 flex items-center justify-center text-white font-bold overflow-hidden shrink-0">
                                     <img v-if="chat.users[0]?.avatar_url" :src="chat.users[0].avatar_url" class="w-full h-full object-cover" />
-                                    <span v-else>{{ chat.users[0]?.name[0] }}</span>
+                                    <span v-else>{{ chat.users[0]?.name ? chat.users[0].name[0] : '?' }}</span>
                                 </div>
                                 <div class="ml-3 text-left">
-                                    <p :class="['font-semibold', selectedChatId === chat.id ? 'text-slate-800' : 'text-gray-900']">{{ chat.users[0]?.name }}</p>
+                                    <div class="flex items-baseline space-x-1.5">
+                                        <p :class="['font-semibold', selectedChatId === chat.id ? 'text-slate-800' : 'text-gray-900']">
+                                            {{ chat.users[0]?.name }}
+                                        </p>
+                                        <span class="text-[10px] text-gray-400 font-normal">@{{ chat.users[0]?.tag }}</span>
+                                    </div>
                                 </div>
                             </div>
                             <div v-if="getUnreadCount(chat) > 0" class="min-w-5 h-5 bg-slate-800 text-white text-[11px] font-bold rounded-full flex items-center justify-center px-1.5 shadow-sm">{{ getUnreadCount(chat) }}</div>
