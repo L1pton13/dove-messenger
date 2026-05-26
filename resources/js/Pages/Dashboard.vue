@@ -546,7 +546,7 @@ const sendMessage = async () => {
 
         <div v-if="contextMenu.show" :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }" class="fixed z-50 min-w-[140px] bg-white/90 backdrop-blur-md border border-gray-200/60 shadow-xl rounded-xl p-1.5 flex flex-col space-y-0.5 text-left text-sm" @click.stop>
             <button @click="startReply" class="w-full text-left px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100/80 flex items-center space-x-2">
-                <span>↪️</span> <span>Ответить</span>
+                <span>Ответить</span>
             </button>
 
             <a v-if="contextMenu.message.file_path" 
@@ -554,11 +554,11 @@ const sendMessage = async () => {
                 :download="contextMenu.message.body || 'file'"
                 @click="closeContextMenu"
                 class="w-full text-left px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100/80 flex items-center space-x-2 calculation-none">
-                <span>📥</span> <span>Скачать</span>
+                <span>Скачать</span>
             </a>
 
             <button v-if="contextMenu.message.sender_id === $page.props.auth.user.id" @click="deleteMessage" class="w-full text-left px-3 py-2 rounded-lg text-red-600 hover:bg-red-50 flex items-center space-x-2">
-                <span>🗑️</span> <span>Удалить</span>
+                <span>Удалить</span>
             </button>
         </div>
 
@@ -631,14 +631,14 @@ const sendMessage = async () => {
                             
                             <div v-if="showHeaderMenu" class="absolute right-9 top-10 w-56 bg-white/95 backdrop-blur-xl border border-gray-200 shadow-2xl rounded-xl p-1.5 flex flex-col space-y-0.5 text-left text-sm z-30" @click.stop>
                                 <button @click="triggerClearChatForMe" class="w-full text-left px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
-                                    <span>🧹</span> <span>Очистить историю</span>
+                                    <span>Очистить историю</span>
                                 </button>
                                 <button @click="triggerClearOwnForEveryone" class="w-full text-left px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
-                                    <span>💥</span> <span>Удалить мои сообщения</span>
+                                    <span>Удалить мои сообщения</span>
                                 </button>
                                 <div class="h-px bg-gray-100 my-1"></div>
                                 <button @click="triggerDeleteChatForMe" class="w-full text-left px-3 py-2 rounded-lg text-red-600 hover:bg-red-50 flex items-center space-x-2">
-                                    <span>🗑️</span> <span>Удалить чат</span>
+                                    <span>Удалить чат</span>
                                 </button>
                             </div>
 
